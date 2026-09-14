@@ -1,0 +1,176 @@
+{
+  "app_name": "Golden",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "A premium, highly functional workspace that blends clean iOS utility with refined gold accents to reflect a modern jewelry enterprise.",
+  "color": {
+    "surface": "#FAFAFA",
+    "onSurface": "#1A1A1A",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#1A1A1A",
+    "surfaceTertiary": "#F2F2F7",
+    "onSurfaceTertiary": "#1A1A1A",
+    "surfaceInverse": "#1A1A1A",
+    "onSurfaceInverse": "#FFFFFF",
+    "brand": "#D4AF37",
+    "brandPrimary": "#C5A028",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#E5C85C",
+    "onBrandSecondary": "#1A1A1A",
+    "brandTertiary": "#F9F3D9",
+    "onBrandTertiary": "#C5A028",
+    "success": "#34C759",
+    "onSuccess": "#FFFFFF",
+    "warning": "#FF9500",
+    "onWarning": "#FFFFFF",
+    "error": "#FF3B30",
+    "onError": "#FFFFFF",
+    "info": "#8E8E93",
+    "onInfo": "#FFFFFF",
+    "border": "#E5E5EA",
+    "borderStrong": "#C7C7CC",
+    "divider": "#E5E5EA",
+    "muted": "#8E8E93",
+    "onBrand": "#FFFFFF"
+  },
+  "typography": {
+    "displayFontFamily": "Space Grotesk",
+    "textFontFamily": "Plus Jakarta Sans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous spacing. 16px (lg) screen padding by default, 24px (xl) for tablet root padding. Ensure buttons have minimum 44px height.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 1,
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use on sticky headers over scrolling inventory lists.",
+      "Use on floating cart summary bar at the bottom of the screen (mobile).",
+      "Pair with >=70% surface/surfaceSecondary tint underneath to ensure absolute readability."
+    ],
+    "dont's": [
+      "Do not use on data rows, product cards, or form inputs."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Login",
+      "purpose": "Secure role-based entry point using Username and PIN pad.",
+      "states": {
+        "loading": "Spinner over brandPrimary button.",
+        "empty": "N/A",
+        "error": "Inline red text above PIN pad."
+      },
+      "layout": "Centered layout. On tablet, a clean white surfaceSecondary card in the center of a surface background. Standard 10-digit numeric pad for PIN entry below username input."
+    },
+    {
+      "name": "Karyawan POS (Sales)",
+      "purpose": "Fast-paced sales interface to view stock, add to cart, and print receipts.",
+      "states": {
+        "loading": "Skeleton product grid.",
+        "empty": "Illustration of empty shelf with 'Belum ada barang di inventaris'.",
+        "error": "Toast with retry button for sync failure."
+      },
+      "layout": "Responsive Split. Mobile: 2-column product grid with a sticky floating cart summary button at the bottom. Tablet: Left 70% is a 3/4-col product grid, Right 30% is a persistent fixed Cart and Receipt panel."
+    },
+    {
+      "name": "Warehouse Dashboard",
+      "purpose": "Inventory management, QR generation, and stock opname workflows.",
+      "states": {
+        "loading": "Skeleton list view.",
+        "empty": "'Tidak ada tugas' empty state.",
+        "error": "Inline error strip below sticky header."
+      },
+      "layout": "List-heavy utility layout. Use single-column list items with thumbnail, SKU, and Stock level. A primary FAB (Floating Action Button) fixed at bottom right for 'Scan QR / Input Stock'."
+    },
+    {
+      "name": "Accounting Dashboard",
+      "purpose": "Financial daily recap and transaction logs.",
+      "states": {
+        "loading": "Skeleton stat cards.",
+        "empty": "'Belum ada penjualan hari ini'.",
+        "error": "Error loading recap data."
+      },
+      "layout": "Top section: 2 large summary cards (Total Income, Total Transactions) using Space Grotesk for metrics. Bottom section: Flat list of daily transactions sorted chronologically."
+    },
+    {
+      "name": "Owner Command Center",
+      "purpose": "Master dashboard for profit tracking, price approvals, and employee management.",
+      "states": {
+        "loading": "Skeleton layout.",
+        "empty": "N/A - Data always present.",
+        "error": "Retry full page fetch."
+      },
+      "layout": "Dashboard grid. Highlight 'Laba Kotor', 'Laba Bersih', and 'Margin' in premium gold-tinted (brandTertiary) summary cards. Below, an 'Action Needed' section for Karyawan price approvals, followed by Employee list."
+    }
+  ],
+  "images": {
+    "jewelry_sample_1": {
+      "url": "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzl8MHwxfHNlYXJjaHwzfHxnb2xkJTIwamV3ZWxyeSUyMHJpbmclMjBuZWNrbGFjZSUyMGx1eHVyeXxlbnwwfHx8fDE3ODkzNzY3NTZ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "silver and blue gemstone pendant necklace"
+    },
+    "jewelry_sample_2": {
+      "url": "https://images.unsplash.com/photo-1585960622850-ed33c41d6418?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzl8MHwxfHNlYXJjaHwyfHxnb2xkJTIwamV3ZWxyeSUyMHJpbmclMjBuZWNrbGFjZSUyMGx1eHVyeXxlbnwwfHx8fDE3ODkzNzY3NTZ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "woman in white v neck shirt wearing gold necklace"
+    },
+    "warehouse_stock": {
+      "url": "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHx3YXJlaG91c2UlMjBpbnZlbnRvcnklMjBzdG9jayUyMHNoZWx2ZXMlMjBib3hlc3xlbnwwfHx8fDE3ODkzNzY3NTZ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "brown cardboard boxes on white metal rack"
+    },
+    "pos_tablet_mockup": {
+      "url": "https://images.unsplash.com/photo-1648824571549-c3bc7946d603?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzl8MHwxfHNlYXJjaHwxfHxyZXRhaWwlMjBzdG9yZSUyMFBPUyUyMGNvdW50ZXIlMjB0YWJsZXQlMjBtb2NrdXB8ZW58MHx8fHwxNzg5Mzc2NzU2fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "a woman standing behind a counter with a tablet"
+    }
+  },
+  "haptics": {
+    "login_pin_press": "light",
+    "login_success": "success",
+    "login_error": "error",
+    "add_to_cart": "medium",
+    "scan_qr_success": "success",
+    "price_approval_accept": "success",
+    "price_approval_reject": "heavy"
+  },
+  "instructions_to_main_agent": [
+    "Ensure layout strictly uses responsive styling to accommodate both Mobile and Tablet. On Tablet, the POS screen must use a Side-by-Side split view for Product Grid and Cart. Do NOT use single column for tablet.",
+    "Do not use pure black for text; use the defined charcoal (#1A1A1A) 'onSurface' to maintain the premium feel.",
+    "Banned hues: NO Blues, Indigos, or Purples anywhere in the app. Adhere purely to the White/Off-White and Gold palette.",
+    "Use Space Grotesk strictly for data numbers (prices, totals, percentages, calculator inputs) and Plus Jakarta Sans for all UI labels, body text, and headers.",
+    "Ensure 'brandTertiary' (#F9F3D9) is used as a soft background for icon containers or highlight rows to gently push the gold theme without being overwhelming.",
+    "When integrating the Camera for barcode scanning, ensure the view overlays a viewfinder box and features a 'Cancel' close button with clear safe-area padding.",
+    "For Karyawan POS grid items, use the provided `jewelry_sample_1` and `jewelry_sample_2` as dummy images. Maintain a 1:1 aspect ratio for product thumbnails with a subtle border (#E5E5EA)."
+  ]
+}
