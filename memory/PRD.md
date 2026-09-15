@@ -47,3 +47,13 @@ tidak bisa melihat menu satu sama lain kecuali Owner (mengepalai semua).
 ## Next Tasks
 - Kustomisasi desain nota penjualan (user akan berikan desain).
 - Uji di perangkat nyata untuk kamera scan & cetak (Expo Go/build).
+
+## Update 2 (2026-06)
+- Barang masuk dari Warehouse kini berstatus `pending_acc` → wajib di-ACC Owner sebelum masuk inventaris ready. Endpoint: `/items/{id}/approve|reject|damage|restore`. Status barang: pending_acc, in_stock (ready), sold, damaged, rejected.
+- Approval Owner punya 2 segmen: **Harga** (transaksi) & **Barang Masuk** (ACC/tolak barang).
+- Dashboard Owner semua kartu bisa diklik:
+  - Total Omzet → Laporan Penjualan (Harian/Mingguan/Bulanan/Tahunan) dengan no. transaksi, tanggal, nama barang & harga jual.
+  - Stok Barang & Nilai Stok → daftar stok (tab Ready/Terjual/Rusak) dengan foto & harga.
+  - Menunggu ACC → layar Approval.
+  - Transaksi Selesai → daftar transaksi per Harian/Mingguan/Bulanan/Tahunan.
+- Warehouse inventaris menampilkan badge status + aksi tandai rusak / kembalikan.

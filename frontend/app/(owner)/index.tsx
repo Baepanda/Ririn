@@ -26,7 +26,7 @@ export default function OwnerHome() {
           <LoadingView />
         ) : (
           <>
-            <View style={styles.heroCard}>
+            <Pressable style={styles.heroCard} onPress={() => router.push("/sales-report")} testID="owner-hero-omzet">
               <Text style={styles.heroLabel}>Total Omzet Penjualan</Text>
               <Text style={styles.heroVal}>{formatIDR(data?.total_revenue)}</Text>
               <View style={styles.heroRow}>
@@ -40,20 +40,21 @@ export default function OwnerHome() {
                   <Text style={styles.heroStatLbl}>Margin</Text>
                 </View>
               </View>
-            </View>
+              <Text style={styles.heroHint}>Ketuk untuk lihat laporan penjualan →</Text>
+            </Pressable>
 
             <View style={styles.grid}>
-              <StatBox icon={<Package size={22} color={colors.brandPrimary} weight="fill" />} value={String(data?.in_stock || 0)} label="Stok Barang" styles={styles} />
-              <StatBox icon={<Wallet size={22} color={colors.brandPrimary} weight="fill" />} value={formatIDR(data?.stock_value)} label="Nilai Stok" styles={styles} />
-              <StatBox icon={<CurrencyCircleDollar size={22} color={colors.brandPrimary} weight="fill" />} value={String(data?.sales_count || 0)} label="Transaksi Selesai" styles={styles} />
-              <StatBox icon={<ClockCountdown size={22} color={colors.warning} weight="fill" />} value={String(data?.pending_approvals || 0)} label="Menunggu ACC" styles={styles} highlight={!!data?.pending_approvals} />
+              <StatBox onPress={() => router.push("/stock-list")} icon={<Package size={22} color={colors.brandPrimary} weight="fill" />} value={String(data?.in_stock || 0)} label="Stok Barang" styles={styles} testID="owner-stat-stock" />
+              <StatBox onPress={() => router.push({ pathname: "/stock-list", params: { filter: "in_stock" } })} icon={<Wallet size={22} color={colors.brandPrimary} weight="fill" />} value={formatIDR(data?.stock_value)} label="Nilai Stok" styles={styles} testID="owner-stat-value" />
+              <StatBox onPress={() => router.push("/tx-report")} icon={<CurrencyCircleDollar size={22} color={colors.brandPrimary} weight="fill" />} value={String(data?.sales_count || 0)} label="Transaksi Selesai" styles={styles} testID="owner-stat-sales" />
+              <StatBox onPress={() => router.push("/(owner)/approval")} icon={<ClockCountdown size={22} color={colors.warning} weight="fill" />} value={String(data?.pending_total || 0)} label="Menunggu ACC" styles={styles} highlight={!!data?.pending_total} testID="owner-stat-pending" />
             </View>
 
             <Pressable style={styles.actionRow} onPress={() => router.push("/(owner)/approval")} testID="owner-go-approval">
               <View style={[styles.actionIcon, { backgroundColor: colors.warning }]}><ClockCountdown size={22} color={colors.onWarning} weight="fill" /></View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.actionTitle}>ACC Harga Transaksi</Text>
-                <Text style={styles.actionSub}>{data?.pending_approvals || 0} transaksi menunggu persetujuan</Text>
+                <Text style={styles.actionTitle}>ACC Harga & Barang Masuk</Text>
+                <Text style={styles.actionSub}>{data?.pending_approvals || 0} harga • {data?.pending_items || 0} barang menunggu</Text>
               </View>
             </Pressable>
 
@@ -79,13 +80,13 @@ export default function OwnerHome() {
   );
 }
 
-function StatBox({ icon, value, label, styles, highlight }: any) {
+function StatBox({ icon, value, label, styles, highlight, onPress, testID }: any) {
   return (
-    <View style={[styles.statBox, highlight && { borderColor: "#FF9500", borderWidth: 1.5 }]}>
+    <Pressable style={[styles.statBox, highlight && { borderColor: "#FF9500", borderWidth: 1.5 }]} onPress={onPress} testID={testID}>
       {icon}
       <Text style={styles.statBoxVal} numberOfLines={1}>{value}</Text>
       <Text style={styles.statBoxLbl}>{label}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -98,6 +99,7 @@ const useStyles = makeStyles((c) => ({
   heroStatVal: { color: c.brand, fontSize: 18, fontWeight: "800" },
   heroStatLbl: { color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 2 },
   heroDivider: { width: 1, height: 36, backgroundColor: "rgba(255,255,255,0.15)" },
+  heroHint: { color: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: "600", marginTop: 14 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   statBox: { width: "47%", flexGrow: 1, backgroundColor: c.surfaceSecondary, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: c.border, gap: 6 },
   statBoxVal: { fontSize: 19, fontWeight: "800", color: c.onSurface, marginTop: 4 },

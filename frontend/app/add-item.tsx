@@ -88,7 +88,7 @@ export default function AddItem() {
         }),
       });
       queryClient.invalidateQueries({ queryKey: ["items"] });
-      toast.show(`${res.count} barang ditambah`, "success");
+      toast.show(`${res.count} barang ditambah, menunggu ACC Owner`, "success");
       try {
         await printQrLabels(res.items);
       } catch {}

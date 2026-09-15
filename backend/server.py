@@ -369,12 +369,55 @@ async def create_items(body: ItemCreate, u=Depends(require_role("warehouse", "ow
             "name": body.name, "category": body.category, "karat": body.karat,
             "weight_gram": body.weight_gram, "cost_price": body.cost_price,
             "photo_path": body.photo_path, "note": body.note,
-            "status": "in_stock",  # in_stock | sold
-            "created_by": u["id"], "created_at": now_iso(),
+            # pending_acc -> in_stock (ready) -> sold ; damaged ; rejected
+            "status": "in_stock" if u["role"] == "owner" else "pending_acc",
+            "created_by": u["id"], "created_by_name": u.get("full_name", u["username"]),
+            "created_at": now_iso(), "approved_at": "", "approved_by": "",
         }
         await db.items.insert_one(doc)
         created.append({k: v for k, v in doc.items() if k != "_id"})
     return {"count": len(created), "items": created}
+
+
+@api_router.post("/items/{item_id}/approve")
+async def approve_item(item_id: str, owner=Depends(require_role("owner"))):
+    it = await db.items.find_one({"id": item_id})
+    if not it:
+        raise HTTPException(404, "Barang tidak ditemukan")
+    if it.get("status") != "pending_acc":
+        raise HTTPException(409, "Barang tidak dalam status menunggu ACC")
+    await db.items.update_one({"id": item_id}, {"$set": {
+        "status": "in_stock", "approved_at": now_iso(), "approved_by": owner["id"]}})
+    return {"ok": True}
+
+
+@api_router.post("/items/{item_id}/reject")
+async def reject_item(item_id: str, owner=Depends(require_role("owner"))):
+    r = await db.items.update_one({"id": item_id, "status": "pending_acc"},
+                                  {"$set": {"status": "rejected"}})
+    if r.matched_count != 1:
+        raise HTTPException(404, "Barang tidak ditemukan / sudah diproses")
+    return {"ok": True}
+
+
+@api_router.post("/items/{item_id}/damage")
+async def mark_damage(item_id: str, u=Depends(require_role("warehouse", "owner"))):
+    it = await db.items.find_one({"id": item_id})
+    if not it:
+        raise HTTPException(404, "Barang tidak ditemukan")
+    if it.get("status") == "sold":
+        raise HTTPException(409, "Barang sudah terjual")
+    await db.items.update_one({"id": item_id}, {"$set": {"status": "damaged", "damaged_at": now_iso()}})
+    return {"ok": True}
+
+
+@api_router.post("/items/{item_id}/restore")
+async def restore_item(item_id: str, u=Depends(require_role("warehouse", "owner"))):
+    r = await db.items.update_one({"id": item_id, "status": "damaged"},
+                                  {"$set": {"status": "in_stock"}})
+    if r.matched_count != 1:
+        raise HTTPException(404, "Barang tidak ditemukan / bukan status rusak")
+    return {"ok": True}
 
 
 @api_router.get("/items")
@@ -389,8 +432,15 @@ async def get_by_qr(qr_code: str, u=Depends(current_user)):
     it = await db.items.find_one({"qr_code": qr_code.upper()})
     if not it:
         raise HTTPException(404, "Barang tidak ditemukan")
-    if it.get("status") == "sold":
+    st = it.get("status")
+    if st == "sold":
         raise HTTPException(409, "Barang sudah terjual / keluar inventaris")
+    if st == "pending_acc":
+        raise HTTPException(409, "Barang belum di-ACC Owner")
+    if st == "damaged":
+        raise HTTPException(409, "Barang berstatus rusak")
+    if st != "in_stock":
+        raise HTTPException(409, "Barang tidak tersedia")
     return {k: v for k, v in it.items() if k != "_id"}
 
 
@@ -577,6 +627,9 @@ async def daily_sales(date: Optional[str] = None, u=Depends(require_role("accoun
 @api_router.get("/reports/summary")
 async def summary(owner=Depends(require_role("owner"))):
     in_stock = await db.items.count_documents({"status": "in_stock"})
+    sold_items = await db.items.count_documents({"status": "sold"})
+    damaged_items = await db.items.count_documents({"status": "damaged"})
+    pending_items = await db.items.count_documents({"status": "pending_acc"})
     completed = await db.sales.find({"status": "completed"}).to_list(5000)
     pending = await db.sales.count_documents({"status": "pending_approval"})
     total_revenue = sum(s["total_sell"] for s in completed)
@@ -587,8 +640,10 @@ async def summary(owner=Depends(require_role("owner"))):
     async for it in db.items.find({"status": "in_stock"}):
         stock_value += it.get("cost_price", 0)
     return {
-        "in_stock": in_stock, "stock_value": stock_value,
+        "in_stock": in_stock, "sold_items": sold_items, "damaged_items": damaged_items,
+        "pending_items": pending_items, "stock_value": stock_value,
         "sales_count": len(completed), "pending_approvals": pending,
+        "pending_total": pending + pending_items,
         "total_revenue": total_revenue, "total_cost": total_cost,
         "gross_profit": gross_profit, "margin": margin,
     }
