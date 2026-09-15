@@ -57,3 +57,8 @@ tidak bisa melihat menu satu sama lain kecuali Owner (mengepalai semua).
   - Menunggu ACC → layar Approval.
   - Transaksi Selesai → daftar transaksi per Harian/Mingguan/Bulanan/Tahunan.
 - Warehouse inventaris menampilkan badge status + aksi tandai rusak / kembalikan.
+
+## Update 3 (2026-06)
+- **Grafik Tren Omzet** di dashboard Owner (react-native-gifted-charts): toggle Harian (7 hari) / Bulanan (6 bulan). Endpoint `/api/reports/trend?type=daily|monthly`.
+- **Pencarian barang** di Inventaris (Warehouse) & Stok (Owner): filter realtime nama / kode QR / kategori.
+- **Riwayat barang rusak**: saat tandai rusak, Warehouse mengisi alasan; tersimpan `damage_reason`, `damaged_at`, `damaged_by_name`; tampil di tab Rusak (Owner) & daftar Warehouse. Endpoint `/items/{id}/damage` menerima body `{reason}`.

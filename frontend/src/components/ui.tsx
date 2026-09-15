@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import { CaretLeft } from "phosphor-react-native";
+import { CaretLeft, MagnifyingGlass, XCircle } from "phosphor-react-native";
 import { useRouter } from "expo-router";
 import { makeStyles, useTheme } from "@/src/theme";
 
@@ -289,3 +289,56 @@ export function EmptyState({ icon, title, subtitle }: { icon?: React.ReactNode; 
 }
 
 export { ScrollView };
+
+// ---------------------------------------------------------------------------
+// SearchBar
+// ---------------------------------------------------------------------------
+export function SearchBar({
+  value,
+  onChangeText,
+  placeholder = "Cari...",
+  testID,
+}: {
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder?: string;
+  testID?: string;
+}) {
+  const s = useSearchStyles();
+  const { colors } = useTheme();
+  return (
+    <View style={s.wrap}>
+      <MagnifyingGlass size={18} color={colors.muted} />
+      <TextInput
+        style={s.input}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.muted}
+        autoCapitalize="none"
+        autoCorrect={false}
+        testID={testID}
+      />
+      {value.length > 0 && (
+        <Pressable onPress={() => onChangeText("")} hitSlop={8} testID={`${testID}-clear`}>
+          <XCircle size={18} color={colors.muted} weight="fill" />
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+const useSearchStyles = makeStyles((c) => ({
+  wrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: c.surfaceTertiary,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 46,
+    borderWidth: 1,
+    borderColor: c.border,
+  },
+  input: { flex: 1, fontSize: 15, color: c.onSurface, paddingVertical: 0 },
+}));

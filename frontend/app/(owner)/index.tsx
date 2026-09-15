@@ -7,6 +7,7 @@ import { useApi } from "@/src/api/query";
 import { useAuth } from "@/src/auth/auth";
 import { ScreenContainer, AppHeader, formatIDR, LoadingView } from "@/src/components/ui";
 import { LogoutButton } from "@/src/components/logout-button";
+import { OmzetChart } from "@/src/components/omzet-chart";
 
 export default function OwnerHome() {
   const styles = useStyles();
@@ -49,6 +50,8 @@ export default function OwnerHome() {
               <StatBox onPress={() => router.push("/tx-report")} icon={<CurrencyCircleDollar size={22} color={colors.brandPrimary} weight="fill" />} value={String(data?.sales_count || 0)} label="Transaksi Selesai" styles={styles} testID="owner-stat-sales" />
               <StatBox onPress={() => router.push("/(owner)/approval")} icon={<ClockCountdown size={22} color={colors.warning} weight="fill" />} value={String(data?.pending_total || 0)} label="Menunggu ACC" styles={styles} highlight={!!data?.pending_total} testID="owner-stat-pending" />
             </View>
+
+            <OmzetChart />
 
             <Pressable style={styles.actionRow} onPress={() => router.push("/(owner)/approval")} testID="owner-go-approval">
               <View style={[styles.actionIcon, { backgroundColor: colors.warning }]}><ClockCountdown size={22} color={colors.onWarning} weight="fill" /></View>

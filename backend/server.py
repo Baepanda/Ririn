@@ -233,6 +233,10 @@ class OpnameCreate(BaseModel):
     items: List[OpnameItem]
 
 
+class DamageBody(BaseModel):
+    reason: str = ""
+
+
 # ----------------------------------------------------------------------------
 # Auth routes
 # ----------------------------------------------------------------------------
@@ -401,13 +405,15 @@ async def reject_item(item_id: str, owner=Depends(require_role("owner"))):
 
 
 @api_router.post("/items/{item_id}/damage")
-async def mark_damage(item_id: str, u=Depends(require_role("warehouse", "owner"))):
+async def mark_damage(item_id: str, body: DamageBody, u=Depends(require_role("warehouse", "owner"))):
     it = await db.items.find_one({"id": item_id})
     if not it:
         raise HTTPException(404, "Barang tidak ditemukan")
     if it.get("status") == "sold":
         raise HTTPException(409, "Barang sudah terjual")
-    await db.items.update_one({"id": item_id}, {"$set": {"status": "damaged", "damaged_at": now_iso()}})
+    await db.items.update_one({"id": item_id}, {"$set": {
+        "status": "damaged", "damaged_at": now_iso(),
+        "damage_reason": body.reason, "damaged_by_name": u.get("full_name", u["username"])}})
     return {"ok": True}
 
 
@@ -647,6 +653,34 @@ async def summary(owner=Depends(require_role("owner"))):
         "total_revenue": total_revenue, "total_cost": total_cost,
         "gross_profit": gross_profit, "margin": margin,
     }
+
+
+@api_router.get("/reports/trend")
+async def trend(type: str = "daily", owner=Depends(require_role("owner"))):
+    completed = await db.sales.find({"status": "completed"}).to_list(10000)
+    now = datetime.now(timezone.utc)
+    buckets = []
+    id_months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"]
+    id_days = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
+    if type == "monthly":
+        # last 6 calendar months
+        for i in range(5, -1, -1):
+            y = now.year
+            m = now.month - i
+            while m <= 0:
+                m += 12
+                y -= 1
+            prefix = f"{y:04d}-{m:02d}"
+            total = sum(s["total_sell"] for s in completed if str(s.get("completed_at", "")).startswith(prefix))
+            buckets.append({"label": id_months[m - 1], "value": total})
+    else:
+        # last 7 days
+        for i in range(6, -1, -1):
+            d = now - timedelta(days=i)
+            prefix = d.strftime("%Y-%m-%d")
+            total = sum(s["total_sell"] for s in completed if str(s.get("completed_at", "")).startswith(prefix))
+            buckets.append({"label": id_days[(d.weekday() + 1) % 7], "value": total})
+    return {"type": type, "points": buckets}
 
 
 # ----------------------------------------------------------------------------
