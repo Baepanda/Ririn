@@ -1,5 +1,7 @@
 import os
 import uuid
+import random
+import string
 import logging
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -86,6 +88,21 @@ def get_object(path: str):
 # ----------------------------------------------------------------------------
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+async def gen_receipt_no(sales_name: str) -> str:
+    """Format: 3 random letters + DDMMYY + 2 initials of sales name. e.g. ABC010126Ri"""
+    dmy = datetime.now(timezone.utc).strftime("%d%m%y")
+    nm = (sales_name or "XX").strip() or "XX"
+    two = (nm + "X")[:2]
+    two = two[0].upper() + two[1].lower()
+    for _ in range(30):
+        letters = "".join(random.choices(string.ascii_uppercase, k=3))
+        rn = f"{letters}{dmy}{two}"
+        exists = await db.sales.find_one({"receipt_no": rn})
+        if not exists:
+            return rn
+    return f"{''.join(random.choices(string.ascii_uppercase, k=3))}{dmy}{two}{random.randint(0, 9)}"
 
 
 def hash_pw(pw: str) -> str:
@@ -212,6 +229,8 @@ class CartLine(BaseModel):
 class SaleCreate(BaseModel):
     lines: List[CartLine]
     customer: str = ""
+    customer_phone: str = ""
+    customer_address: str = ""
     note: str = ""
 
 
@@ -490,7 +509,9 @@ async def create_sale(body: SaleCreate, u=Depends(require_role("employee", "owne
     doc = {
         "id": str(uuid.uuid4()),
         "receipt_no": "",
-        "lines": lines_data, "customer": body.customer, "note": body.note,
+        "lines": lines_data, "customer": body.customer,
+        "customer_phone": body.customer_phone, "customer_address": body.customer_address,
+        "note": body.note,
         "total_sell": total_sell, "total_cost": total_cost,
         "profit": profit, "profit_pct": profit_pct,
         "status": "pending_approval",  # pending_approval | approved | rejected | completed
@@ -556,13 +577,21 @@ async def complete_sale(sale_id: str, body: SaleComplete, u=Depends(require_role
     item_ids = [l["item_id"] for l in s["lines"]]
     await db.items.update_many({"id": {"$in": item_ids}}, {"$set": {
         "status": "sold", "sold_at": now_iso(), "sale_id": sale_id}})
-    count = await db.sales.count_documents({"status": "completed"})
-    receipt_no = f"INV-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{count + 1:04d}"
+    receipt_no = await gen_receipt_no(s.get("created_by_name", ""))
     await db.sales.update_one({"id": sale_id}, {"$set": {
         "status": "completed", "payment_method": body.payment_method,
         "transaction_number": body.transaction_number, "receipt_no": receipt_no,
         "completed_at": now_iso()}})
     s = await db.sales.find_one({"id": sale_id})
+    return {k: v for k, v in s.items() if k != "_id"}
+
+
+@api_router.get("/sales/verify/{receipt_no}")
+async def verify_receipt(receipt_no: str, u=Depends(current_user)):
+    # Only holders of a Golden account (any authenticated user) can verify a nota.
+    s = await db.sales.find_one({"receipt_no": receipt_no.strip()})
+    if not s or s.get("status") != "completed":
+        raise HTTPException(404, "Nota tidak ditemukan / tidak valid")
     return {k: v for k, v in s.items() if k != "_id"}
 
 
@@ -671,15 +700,19 @@ async def trend(type: str = "daily", owner=Depends(require_role("owner"))):
                 m += 12
                 y -= 1
             prefix = f"{y:04d}-{m:02d}"
-            total = sum(s["total_sell"] for s in completed if str(s.get("completed_at", "")).startswith(prefix))
-            buckets.append({"label": id_months[m - 1], "value": total})
+            month_sales = [s for s in completed if str(s.get("completed_at", "")).startswith(prefix)]
+            total = sum(s["total_sell"] for s in month_sales)
+            profit = sum(s.get("profit", 0) for s in month_sales)
+            buckets.append({"label": id_months[m - 1], "value": total, "profit": profit})
     else:
         # last 7 days
         for i in range(6, -1, -1):
             d = now - timedelta(days=i)
             prefix = d.strftime("%Y-%m-%d")
-            total = sum(s["total_sell"] for s in completed if str(s.get("completed_at", "")).startswith(prefix))
-            buckets.append({"label": id_days[(d.weekday() + 1) % 7], "value": total})
+            day_sales = [s for s in completed if str(s.get("completed_at", "")).startswith(prefix)]
+            total = sum(s["total_sell"] for s in day_sales)
+            profit = sum(s.get("profit", 0) for s in day_sales)
+            buckets.append({"label": id_days[(d.weekday() + 1) % 7], "value": total, "profit": profit})
     return {"type": type, "points": buckets}
 
 

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native"
 import { Receipt } from "phosphor-react-native";
 import { makeStyles, useTheme } from "@/src/theme";
 import { useApi } from "@/src/api/query";
-import { ScreenContainer, AppHeader, formatIDR, EmptyState, LoadingView } from "@/src/components/ui";
+import { ScreenContainer, AppHeader, formatIDR, EmptyState, LoadingView, SearchBar } from "@/src/components/ui";
 import { SaleRow } from "@/src/components/sale-row";
 import { RoleGuard } from "@/src/auth/role-guard";
 import { PERIOD_OPTIONS, Period, inPeriod } from "@/src/utils/period";
@@ -12,9 +12,19 @@ function Report() {
   const styles = useStyles();
   const { colors } = useTheme();
   const [period, setPeriod] = useState<Period>("day");
+  const [q, setQ] = useState("");
   const { data: sales = [], isLoading, refetch, isRefetching } = useApi<any[]>(["sales", "completed"], "/sales?status=completed");
 
-  const filtered = useMemo(() => sales.filter((s) => inPeriod(s.completed_at, period)), [sales, period]);
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return sales.filter(
+      (s) =>
+        inPeriod(s.completed_at, period) &&
+        (!term ||
+          s.receipt_no?.toLowerCase().includes(term) ||
+          s.customer?.toLowerCase().includes(term)),
+    );
+  }, [sales, period, q]);
   const total = useMemo(() => filtered.reduce((a, s) => a + s.total_sell, 0), [filtered]);
 
   return (
@@ -40,10 +50,11 @@ function Report() {
           <Text style={styles.sumTxt}>{filtered.length} transaksi</Text>
           <Text style={styles.sumVal}>{formatIDR(total)}</Text>
         </View>
+        <SearchBar value={q} onChangeText={setQ} placeholder="Cari nomor nota / nama pelanggan" testID="tx-search" />
         {isLoading ? (
           <LoadingView />
         ) : filtered.length === 0 ? (
-          <EmptyState icon={<Receipt size={40} color={colors.muted} />} title="Belum ada transaksi pada periode ini" />
+          <EmptyState icon={<Receipt size={40} color={colors.muted} />} title={q ? "Transaksi tidak ditemukan" : "Belum ada transaksi pada periode ini"} />
         ) : (
           filtered.map((s) => <SaleRow key={s.id} sale={s} />)
         )}

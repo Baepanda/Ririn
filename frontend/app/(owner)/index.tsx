@@ -1,12 +1,13 @@
 import React from "react";
 import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
-import { TrendUp, Package, Calculator, ClockCountdown, CurrencyCircleDollar, Wallet, Percent } from "phosphor-react-native";
+import { TrendUp, Package, Calculator, ClockCountdown, CurrencyCircleDollar, Wallet, Percent, ShieldCheck } from "phosphor-react-native";
 import { makeStyles, useTheme } from "@/src/theme";
 import { useApi } from "@/src/api/query";
 import { useAuth } from "@/src/auth/auth";
 import { ScreenContainer, AppHeader, formatIDR, LoadingView } from "@/src/components/ui";
 import { LogoutButton } from "@/src/components/logout-button";
+import { NotifBell } from "@/src/components/notif-bell";
 import { OmzetChart } from "@/src/components/omzet-chart";
 
 export default function OwnerHome() {
@@ -18,7 +19,7 @@ export default function OwnerHome() {
 
   return (
     <ScreenContainer>
-      <AppHeader title={`Halo, ${user?.full_name || "Owner"}`} subtitle="Command Center" right={<LogoutButton />} />
+      <AppHeader title={`Halo, ${user?.full_name || "Owner"}`} subtitle="Command Center" right={<View style={{ flexDirection: "row", gap: 8 }}><NotifBell /><LogoutButton /></View>} />
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.brandPrimary} />}
@@ -74,6 +75,14 @@ export default function OwnerHome() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.actionTitle}>Laporan & Analisa</Text>
                 <Text style={styles.actionSub}>Rekap harian, stock opname & keuangan</Text>
+              </View>
+            </Pressable>
+
+            <Pressable style={styles.actionRow} onPress={() => router.push("/verify")} testID="owner-go-verify">
+              <View style={[styles.actionIcon, { backgroundColor: colors.success }]}><ShieldCheck size={22} color={colors.onSuccess} weight="fill" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.actionTitle}>Verifikasi Nota</Text>
+                <Text style={styles.actionSub}>Scan QR nota untuk cek keaslian transaksi</Text>
               </View>
             </Pressable>
           </>

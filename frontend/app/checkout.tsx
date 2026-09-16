@@ -22,6 +22,8 @@ export default function Checkout() {
 
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [customer, setCustomer] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +45,7 @@ export default function Checkout() {
     }
     setLoading(true);
     try {
-      const sale = await apiFetch<any>("/sales", { method: "POST", body: JSON.stringify({ lines, customer, note }) });
+      const sale = await apiFetch<any>("/sales", { method: "POST", body: JSON.stringify({ lines, customer, customer_phone: customerPhone, customer_address: customerAddress, note }) });
       cart.clear();
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       toast.show("Transaksi diajukan, menunggu ACC Owner", "success");
@@ -99,6 +101,10 @@ export default function Checkout() {
 
         <Card>
           <TextField label="Nama Pelanggan (opsional)" value={customer} onChangeText={setCustomer} placeholder="Nama" testID="checkout-customer" />
+          <View style={{ height: 12 }} />
+          <TextField label="Nomor Telepon (opsional)" value={customerPhone} onChangeText={setCustomerPhone} keyboardType="phone-pad" placeholder="08xxxx" testID="checkout-phone" />
+          <View style={{ height: 12 }} />
+          <TextField label="Alamat (opsional)" value={customerAddress} onChangeText={setCustomerAddress} placeholder="Alamat pelanggan" testID="checkout-address" />
           <View style={{ height: 12 }} />
           <TextField label="Catatan (opsional)" value={note} onChangeText={setNote} placeholder="Catatan" testID="checkout-note" />
         </Card>

@@ -26,6 +26,7 @@ export default function RootLayout() {
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="checkout" options={{ presentation: "modal" }} />
                     <Stack.Screen name="scan" options={{ presentation: "fullScreenModal" }} />
+                    <Stack.Screen name="verify" options={{ presentation: "fullScreenModal" }} />
                     <Stack.Screen name="add-item" options={{ presentation: "modal" }} />
                     <Stack.Screen name="calculator" options={{ presentation: "modal" }} />
                     <Stack.Screen name="opname-new" options={{ presentation: "modal" }} />
